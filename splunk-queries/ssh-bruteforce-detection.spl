@@ -1,0 +1,8 @@
+# SSH Brute-Force → Successful Compromise Detection
+# Detects: a single source IP with 6+ failed SSH logins AND at least 1 successful login
+# MITRE ATT&CK: T1110.001 - Password Guessing (Credential Access)
+
+index="ubuntu_logs" ("Failed password" OR "Accepted password")
+| eval status=if(match(_raw, "Failed password"), "fail", "success")
+| stats count(eval(status="fail")) as fail_count, count(eval(status="success")) as success_count by src_ip
+| where fail_count >= 6 AND success_count >= 1
